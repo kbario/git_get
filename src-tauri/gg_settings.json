@@ -1,0 +1,15 @@
+[
+  {
+    "path": "/Users/kylebario/luaProjects/spear.nvim/",
+    "branches": [
+      "main",
+      "sprint"
+    ]
+  },
+  {
+    "path": "/Users/kylebario/luaProjects/homerows.nvim/",
+    "branches": [
+      "main"
+    ]
+  }
+]

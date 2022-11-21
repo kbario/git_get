@@ -1,0 +1,18 @@
+<div *ngIf="result"
+     class="flex flex-col gap-2">
+  <div class="text-md uppercase">{{ result.repo }}</div>
+  <div *ngFor="let branch of result.branches"
+       class="flex flex-col gap-2 p-2 bg-slate-100 rounded-sm">
+    <div class="text-sm uppercase">{{ branch.branch }}</div>
+    <app-pull-display [action]="branch.checkout.status ? 'checkout' : ''"
+                      [status]="branch.checkout.status"
+                      [stdout]="branch.checkout.stdout"
+                      [stderr]="branch.checkout.stderr">
+    </app-pull-display>
+    <app-pull-display [action]="branch.checkout.status ? 'pull' : ''"
+                      [status]="branch.pull.status" 
+                      [stdout]="branch.pull.stdout"
+                      [stderr]="branch.pull.stderr">
+    </app-pull-display>
+  </div>
+</div>

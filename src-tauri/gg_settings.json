@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "path": "/Users/kylebario/luaProjects/spear.nvim/",
     "branches": [
       "main",
@@ -7,6 +8,7 @@
     ]
   },
   {
+    "id": 2,
     "path": "/Users/kylebario/luaProjects/homerows.nvim/",
     "branches": [
       "main"

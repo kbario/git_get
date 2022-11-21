@@ -24,6 +24,7 @@ impl serde::Serialize for CustomError {
 
 #[derive(Serialize, Deserialize)]
 struct CustomOutput {
+    action: String,
     status: Option<i32>,
     stdout: String,
     stderr: String,
@@ -54,6 +55,7 @@ fn get_repo_name(repo: &str) -> Result<CustomOutput, CustomError> {
         .output()
         .unwrap();
     let current_branch = CustomOutput {
+        action: "get_repo_name".to_string(),
         status: current_branch.status.code(),
         stdout: String::from_utf8_lossy(&current_branch.stdout).to_string(),
         stderr: String::from_utf8_lossy(&current_branch.stderr).to_string(),
@@ -70,6 +72,7 @@ fn get_current_branch(repo: &str) -> Result<CustomOutput, CustomError> {
         .output()
         .unwrap();
     let current_branch = CustomOutput {
+        action: "get_current_branch".to_string(),
         status: current_branch.status.code(),
         stdout: String::from_utf8_lossy(&current_branch.stdout).to_string(),
         stderr: String::from_utf8_lossy(&current_branch.stderr).to_string(),
@@ -86,6 +89,7 @@ fn pull_repo_branch(repo: &str, branch: &str) -> Result<GitPull, CustomError> {
         .output()
         .unwrap();
     let checkout = CustomOutput {
+        action: "checkout".to_string(),
         status: checkout.status.code(),
         stdout: String::from_utf8_lossy(&checkout.stdout).to_string(),
         stderr: String::from_utf8_lossy(&checkout.stderr).to_string(),
@@ -96,6 +100,7 @@ fn pull_repo_branch(repo: &str, branch: &str) -> Result<GitPull, CustomError> {
         .output()
         .unwrap();
     let pull = CustomOutput {
+        action: "pull".to_string(),
         status: pull.status.code(),
         stdout: String::from_utf8_lossy(&pull.stdout).to_string(),
         stderr: String::from_utf8_lossy(&pull.stderr).to_string(),

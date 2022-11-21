@@ -1,0 +1,20 @@
+<div class="flex flex-col gap-2 p-4 w-full">
+  <div class="flex flex-col gap-2 w-full">
+    <div *ngFor="let set of settings">
+      <div type="text" class="uppercase text-lg">{{getNameFromPath(set.path)}}</div>
+      <div *ngFor="let b of set.branches">
+        <span>{{b}}</span>
+        <!-- <button mat-button (click)="remove"> -->
+        <!--   <mat-icon>cross</mat-icon> -->
+        <!-- </button> -->
+      </div>
+      <div class="flex gap-2 w-full">
+        <input type="text" class="grow" #asdf />
+          <button mat-button (click)="add(set.id, asdf.value); asdf.value = ''" class="w-fit">
+          add
+        </button>
+      </div>
+    </div>
+  </div>
+  <button (click)="close()" class="">close</button>
+</div>

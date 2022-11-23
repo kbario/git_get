@@ -1,4 +1,4 @@
-<div *ngIf="result" class="flex flex-col gap-2">
+<div *ngIf="result" class="flex flex-col gap-2 w-full">
   <div class="text-md uppercase">{{ result.repo }}</div>
   <div *ngFor="let branch of result.branches" class="flex flex-col gap-2 p-2 bg-slate-100 rounded-sm">
     <div class="text-sm uppercase">{{ branch.branch }}</div>

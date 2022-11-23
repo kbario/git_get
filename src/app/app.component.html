@@ -1,21 +1,23 @@
-<main *ngIf="{ results: results$ | async, isLoading: isLoading$ | async } as vm" 
-      class="flex flex-col gap-2 p-4 overflow-auto">
+<main *ngIf="{ results: results$ | async, isLoading: isLoading$ | async } as vm"
+  class="flex flex-col gap-2 p-4 overflow-hidden h-screen w-screen">
 
   <mat-progress-bar class="-slate-400" *ngIf="vm.isLoading" mode="indeterminate"></mat-progress-bar>
 
-  <div *ngFor="let result of vm.results">
-    <app-result-container [result]="result"></app-result-container>
+  <div *ngIf="!vm.isLoading" class="flex flex-col gap-2 overflow-scroll  w-full h-full">
+    <div *ngFor="let result of vm.results">
+      <app-result-container [result]="result"></app-result-container>
+    </div>
   </div>
 
   <div class="z-50 absolute bottom-4 right-4 flex items-center gap-2">
-    <button class="flex items-center justify-center rounded-full bg-slate-300 w-12 h-12 shadow-md"
-      aria-label="Example icon button with a filter list icon"
-      (click)="add()">
+    <button [disabled]="vm.isLoading" class="disabled:cursor-wait disabled:bg-slate-400 
+      flex items-center justify-center rounded-full bg-slate-300 w-12 h-12 shadow-md"
+      aria-label="Example icon button with a filter list icon" (click)="add()">
       <mat-icon>settings</mat-icon>
     </button>
-    <button class="flex items-center justify-center rounded-full bg-slate-300 w-12 h-12 shadow-md"
-      aria-label="Example icon button with a filter list icon"
-      (click)="repull()">
+    <button [disabled]="vm.isLoading" class="disabled:cursor-wait disabled:bg-slate-400
+      flex items-center justify-center rounded-full bg-slate-300 w-12 h-12 shadow-md"
+      aria-label="Example icon button with a filter list icon" (click)="repull()">
       <mat-icon>refresh</mat-icon>
     </button>
   </div>

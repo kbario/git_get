@@ -46,9 +46,7 @@ export class AppComponent implements OnInit {
   }
 
   public repull = async () => {
-    this.isLoadingSubject.next(true);
     await this.pull();
-    this.isLoadingSubject.next(false)
   };
 
   public add = async () => {
@@ -56,9 +54,9 @@ export class AppComponent implements OnInit {
   };
 
   private pull = async () => {
+    this.isLoadingSubject.next(true);
     const results: Result[] = [];
     const settings: Settings[] = await this.readSettings();
-    console.log(settings)
 
     for (let i = 0; i < settings.length; i++) {
       const repo: string = settings[i].path;
@@ -78,30 +76,24 @@ export class AppComponent implements OnInit {
       results.push(result)
     }
 
-    console.log(results)
     this.resultsSubject.next(results)
+    this.isLoadingSubject.next(false)
   }
 
-  public openDialog = async (): Promise<void> =>  {
+  public openDialog = async (): Promise<void> => {
     const settings: Settings[] = await this.readSettings();
     const dialogRef = this.dialog.open(AddDialogComponent, {
       width: '250px',
-      data: {settings: settings},
+      data: { settings: settings },
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      this.writeSettings(result)
-      console.log('The dialog was closed');
+      if (!this.deepEqual(settings, result)) {
+        this.writeSettings(result);
+        this.pull();
+      }
     });
   }
-  // private getRepoName = async () => {
-  //   const output: Output = await invoke("get_repo_name", {
-  //     repo: "/Users/kylebario/luaProjects/spear.nvim/"
-  //   })
-  //   if (output.status === 0) {
-  //     this.repoName = this.getNameFromPath(output.stdout)
-  //   }
-  // }
 
   private getCurrentBranch = async () => {
     const output: Output = await invoke("get_current_branch", {
@@ -112,8 +104,6 @@ export class AppComponent implements OnInit {
     }
   }
 
-
-
   private readSettings = async () => {
     const resourcePath = await resolveResource('gg_settings.json')
     return JSON.parse(await readTextFile(resourcePath))
@@ -121,11 +111,26 @@ export class AppComponent implements OnInit {
   };
 
   private writeSettings = async (setts: Settings) => {
-    return await writeTextFile("gg_settings", JSON.stringify(setts), { dir: BaseDirectory.Resource });
-
+    return await writeTextFile("gg_settings.json", JSON.stringify(setts), { dir: BaseDirectory.Resource });
   };
-}
 
+  private deepEqual = (setts: Settings[], res: Settings[]) => {
+    // if the number of keys is different, they are different
+    if (setts.length !== res.length) return false
+    for (let i = 0; i < setts.length; i++) {
+      if (setts[i].path !== res[i].path || setts[i].id !== res[i].id) {
+        return false
+      } else {
+        for (let j = 0; j < setts[i].branches.length; j++ ) {
+          if (setts[i].branches.includes(res[i].branches[j])||
+          res[i].branches.includes(setts[i].branches[j])) {
+            return false
+          }
+        }
+      }
+    }
+    return true
+  }
 
-
+};
 

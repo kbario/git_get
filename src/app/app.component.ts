@@ -1,8 +1,8 @@
 import { BehaviorSubject, Observable } from "rxjs";
 
 import { invoke } from '@tauri-apps/api';
-import { BaseDirectory, resolveResource } from '@tauri-apps/api/path'
-import { readTextFile, writeTextFile } from '@tauri-apps/api/fs'
+import { BaseDirectory, dataDir, resolve } from '@tauri-apps/api/path'
+import { exists, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 
 import { Component, OnInit } from '@angular/core';
 
@@ -30,6 +30,7 @@ export class AppComponent implements OnInit {
   public isLoadingSubject: BehaviorSubject<boolean>;
   public isLoading$: Observable<boolean>;
 
+  private settings: Settings[] = [];
 
   constructor(public dialog: MatDialog) {
     this.resultsSubject = new BehaviorSubject([results_initialiser])
@@ -39,10 +40,10 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.initSettings()
     await this.getCurrentBranch()
     await this.pull()
     this.isLoadingSubject.next(false)
-    this.openDialog()
   }
 
   public repull = async () => {
@@ -53,17 +54,26 @@ export class AppComponent implements OnInit {
     this.openDialog()
   };
 
+  private initSettings = async () => {
+    const dataExists = await exists('gg_settings.json', { dir: BaseDirectory.Data });
+    if (dataExists) {
+      this.settings = await this.readSettings();
+    } else {
+      this.writeSettings([]);
+      this.settings = [];
+    }
+  };
+
   private pull = async () => {
     this.isLoadingSubject.next(true);
     const results: Result[] = [];
-    const settings: Settings[] = await this.readSettings();
 
-    for (let i = 0; i < settings.length; i++) {
-      const repo: string = settings[i].path;
-      const result: Result = { repo: getNameFromPath(settings[i].path), branches: [] };
+    for (let i = 0; i < this.settings.length; i++) {
+      const repo: string = this.settings[i].path;
+      const result: Result = { repo: getNameFromPath(this.settings[i].path), branches: [] };
 
-      for (let j = 0; j < settings[i].branches.length; j++) {
-        const branch: string = settings[i].branches[j];
+      for (let j = 0; j < this.settings[i].branches.length; j++) {
+        const branch: string = this.settings[i].branches[j];
         const pull: GitPull = await invoke("pull_repo_branch", { repo, branch })
         result.branches.push({
           branch: branch,
@@ -81,17 +91,14 @@ export class AppComponent implements OnInit {
   }
 
   public openDialog = async (): Promise<void> => {
-    const settings: Settings[] = await this.readSettings();
     const dialogRef = this.dialog.open(AddDialogComponent, {
       width: '250px',
-      data: { settings: settings },
+      data: { settings: this.settings },
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!this.deepEqual(settings, result)) {
-        this.writeSettings(result);
-        this.pull();
-      }
+      this.writeSettings(result);
+      this.pull();
     });
   }
 
@@ -105,32 +112,15 @@ export class AppComponent implements OnInit {
   }
 
   private readSettings = async () => {
-    const resourcePath = await resolveResource('gg_settings.json')
-    return JSON.parse(await readTextFile(resourcePath))
-
+    const dataDirPath = await dataDir();
+    const path = await resolve(dataDirPath, 'gg_settings.json')
+    return JSON.parse(await readTextFile(path))
   };
 
-  private writeSettings = async (setts: Settings) => {
-    return await writeTextFile("gg_settings.json", JSON.stringify(setts), { dir: BaseDirectory.Resource });
+  private writeSettings = async (setts: Settings[]) => {
+    this.settings = setts;
+    return await writeTextFile("gg_settings.json", JSON.stringify(setts), { dir: BaseDirectory.Data });
   };
-
-  private deepEqual = (setts: Settings[], res: Settings[]) => {
-    // if the number of keys is different, they are different
-    if (setts.length !== res.length) return false
-    for (let i = 0; i < setts.length; i++) {
-      if (setts[i].path !== res[i].path || setts[i].id !== res[i].id) {
-        return false
-      } else {
-        for (let j = 0; j < setts[i].branches.length; j++ ) {
-          if (setts[i].branches.includes(res[i].branches[j])||
-          res[i].branches.includes(setts[i].branches[j])) {
-            return false
-          }
-        }
-      }
-    }
-    return true
-  }
 
 };
 

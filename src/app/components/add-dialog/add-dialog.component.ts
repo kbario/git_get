@@ -5,6 +5,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { getNameFromPath } from "../../shared/functions/getNameFromPath"
 import { Settings } from 'src/app/interfaces/Settings';
+import { homeDir } from '@tauri-apps/api/path';
 
 export interface DialogData {
   settings: Settings[]
@@ -17,12 +18,12 @@ export interface DialogData {
 })
 export class AddDialogComponent {
 
-  public settings: Settings[];
+  public settings: Settings[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<AddDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
-  ) { this.settings = data.settings }
+  ) { this.settings = data.settings ?? [] }
 
   close(): void {
     this.dialogRef.close(this.settings);
@@ -31,7 +32,8 @@ export class AddDialogComponent {
   public getNameFromPath = getNameFromPath
 
   public add = (id: number, val: string) => {
-    this.settings.filter((x: Settings) => x.id === id)[0].branches.push(val)
+    console.log()
+    this.settings.find((x: Settings) => x.id === id)?.branches.push(val)
   }
 
   public remove = (id: number, val: string) => {
@@ -42,9 +44,9 @@ export class AddDialogComponent {
   public addRepo = async () => {
     // Open a selection dialog for image files
     const selected = await open({
-      title: "Choose a repo",
       multiple: true,
-      directory: true
+      directory: true,
+      defaultPath: await homeDir()
     });
 
     if (Array.isArray(selected)) {
@@ -61,7 +63,7 @@ export class AddDialogComponent {
   };
 
   private pushPathOnSettings = (path: string): void => {
-    const id = this.settings[this.settings.length - 1].id + 1;
+    const id = this.settings[this.settings.length - 1]?.id + 1 ?? 0;
 
     this.settings.push({ id: id, path: path, branches: [] });
   };
